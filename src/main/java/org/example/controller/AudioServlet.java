@@ -21,17 +21,20 @@ public class AudioServlet extends HttpServlet {
 
 	@Override
 	public void init() throws ServletException {
-//		audioDB.put("one", new Audio());
-		audioDB.put(1,
-				new Audio("artist_name_1", "artist_name_1", "artist_name_1", "artist_name_1", "artist_name_1", 1, 1));
-		audioDB.put(2,
-				new Audio("artist_name_2", "artist_name_2", "artist_name_1", "artist_name_1", "artist_name_1", 1, 1));
-//		audioDB.put("id_2", "artist_name_2");
-//		audioDB.put("id_3", "artist_name_3");
-//		audioDB.put("id_4", "artist_name_4");
-//		audioDB.put("id_5", "artist_name_5");
-//		audioDB.put("id_6", "artist_name_6");	
-//		artist_name_2, track_title_2, album_title_2, track_number_2, year_2, review_count_1, sales_count_1
+		
+		int length = audioDB.size();
+		
+		Audio audio1 = new Audio("artist_name_1", "track_title_1", "album_title_1", "track_number_1", "year_1", 11, 12);
+		audio1.setId(++length);
+		audioDB.put(length, audio1);
+		
+		Audio audio2 = new Audio("artist_name_2", "track_title_2", "album_title_2", "track_number_2", "year_2", 15, 25);
+		audio2.setId(++length);
+		audioDB.put(length, audio2);
+		
+		Audio audio3 = new Audio("artist_name_3", "track_title_3", "album_title_3", "track_number_3", "year_3", 40, 209);
+		audio3.setId(++length);
+		audioDB.put(length, audio3);
 
 	}
 
