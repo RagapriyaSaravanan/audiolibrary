@@ -31,7 +31,6 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.example.model.Audio;
 //import org.example.model.Artist;
 
-
 class WebServletTest {
 
 //	//@Test
@@ -121,20 +120,19 @@ class WebServletTest {
 //		client.stop();
 //	}
 //	
-	void multipleClientsTest(int noOfClients, int ratioOfTests) throws Exception{
-		
-		String url = "http://localhost:9090/library/audio?getAll=true";
+	void multipleClientsTest(int noOfClients, int ratioOfTests) throws Exception {
+
+		String url = "http://localhost:9090/library/audio?id=2&key=artistName";
 		ExecutorService executor = Executors.newFixedThreadPool(noOfClients);
 		List<Long> timePeriods = new ArrayList<>();
 		long totalStartTime = System.currentTimeMillis();
 		HttpClient client = new HttpClient();
 		client.start();
-		
-		
-		for(int i = 0; i < noOfClients; i++) {
-			//int clientID = i + 1;
-			
-			executor.execute(()->{
+
+		for (int i = 0; i < noOfClients; i++) {
+			int clientID = i + 1;
+
+			executor.execute(() -> {
 				for (int j = 0; j < ratioOfTests; j++) {
 					try {
 						long startTime = System.currentTimeMillis();
@@ -143,79 +141,87 @@ class WebServletTest {
 
 						long finishTime = System.currentTimeMillis() - startTime;
 						timePeriods.add(finishTime);
-						
+
 					} catch (InterruptedException | ExecutionException | TimeoutException e) {
 						System.out.print(e.getMessage());
 					}
 				}
-			
 				
+
 				/*
-				 * ObjectMapper mapper = new ObjectMapper(); Audio audio = new Audio(3 +
-				 * clientID, "pefadfe","dafdf","Candy Shop",12,1991,11,10); try { String
-				 * jsonString = mapper.writeValueAsString(audio);
+				 * Audio audio = new Audio("artist_name_test", "track_title_test",
+				 * "album_title_test", "track_number_test", "year_test", 100, 100);
 				 * 
-				 * // calculate round-time long startTime = System.currentTimeMillis();
+				 * try { String jsonString = mapper.writeValueAsString(audio);
+				 * 
+				 * long startTime = System.currentTimeMillis();
 				 * 
 				 * ContentResponse res = client.POST(uri) .content(new
-				 * StringContentProvider(jsonString), "application/json") .send();
+				 * StringContentProvider(jsonString), "application/json").send();
 				 * assertThat(res.getStatus(), equalTo(200)); //
 				 * System.out.println(res.getContentAsString());
 				 * 
-				 * long roundTime = System.currentTimeMillis() - startTime;
-				 * roundTimes.add(roundTime);
+				 * long finishTime = System.currentTimeMillis() - startTime;
+				 * timePeriods.add(finishTime);
 				 * 
 				 * } catch (InterruptedException | TimeoutException | ExecutionException |
 				 * JsonProcessingException e) { System.out.print(e.getMessage()); }
 				 */
+
 			});
 		}
 		executor.shutdown();
 		executor.awaitTermination(10, TimeUnit.MINUTES);
 		long totalFinishTime = System.currentTimeMillis() - totalStartTime;
-		System.out.println("Round-trip time list: "+ timePeriods);
-		System.out.println("The number of clients: " + noOfClients + ", ratio: "+ ratioOfTests + ":1, total round-trip time: " + totalFinishTime + "ms");
-		
+		System.out.println("Round-trip time list: " + timePeriods);
+		System.out.println("The number of clients: " + noOfClients + ", ratio: " + ratioOfTests
+				+ ":1, total round-trip time: " + totalFinishTime + "ms");
+
 	}
-	
+
 	@Test
 	void testAudios10Clients2ratio() throws Exception {
-		multipleClientsTest(10,2);
+		multipleClientsTest(10, 2);
 	}
+
 	@Test
 	void testAudios50Clients2ratio() throws Exception {
-		multipleClientsTest(50,2);
+		multipleClientsTest(50, 2);
 	}
+
 	@Test
 	void testAudios100Clients2ratio() throws Exception {
-		multipleClientsTest(100,2);
+		multipleClientsTest(100, 2);
 	}
+
 	@Test
 	void testAudios10Clients5ratio() throws Exception {
-		multipleClientsTest(10,5);
+		multipleClientsTest(10, 5);
 	}
+
 	@Test
 	void testAudios50Clients5ratio() throws Exception {
-		multipleClientsTest(50,5);
+		multipleClientsTest(50, 5);
 	}
+
 	@Test
 	void testAudios100Clients5ratio() throws Exception {
-		multipleClientsTest(100,5);
+		multipleClientsTest(100, 5);
 	}
+
 	@Test
 	void testAudios10Clients10ratio() throws Exception {
-		multipleClientsTest(10,10);
+		multipleClientsTest(10, 10);
 	}
 	
 	@Test
-	void testAudios100Clients10ratio() throws Exception {
-		multipleClientsTest(100,10);
+	void testAudios50Clients10ratio() throws Exception {
+		multipleClientsTest(50, 10);
 	}
-	
+
+	@Test
+	void testAudios100Clients10ratio() throws Exception {
+		multipleClientsTest(100, 10);
+	}
+
 }
-
-
-
-
-
-

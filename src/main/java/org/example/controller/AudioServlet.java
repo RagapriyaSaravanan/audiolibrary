@@ -47,7 +47,7 @@ public class AudioServlet extends HttpServlet {
 			String id = request.getParameter("id");
 			System.out.println("id: " + id + " key: " + key);
 			String getAll = request.getParameter("getAll");
-			if (getAll.equalsIgnoreCase("true")) {
+			if (getAll != null && getAll.equalsIgnoreCase("true")) {
 				response.setStatus(200);
 				audioDB.values()
 						.forEach(audio -> message.append("artistName: " + audio.getArtistName() + ", trackTitle: "
