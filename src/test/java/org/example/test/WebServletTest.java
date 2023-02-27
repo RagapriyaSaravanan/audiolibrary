@@ -1,10 +1,7 @@
 package org.example.test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -13,116 +10,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.jupiter.api.Test;
-
-import com.google.gson.Gson;
-
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpResponse;
-import org.eclipse.jetty.client.api.ContentProvider;
 import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.StringContentProvider;
-import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.util.Fields;
 import org.example.model.Audio;
-//import org.example.model.Artist;
+import org.junit.jupiter.api.Test;
 
 class WebServletTest {
 
-//	//@Test
-//	void testHelloServletGet() throws Exception {
-//		
-//		HttpClient client = new HttpClient();
-//        client.start();
-//
-//        ContentResponse res = client.GET("http://localhost:9090/coen6317/HelloServlet");
-//        
-//        System.out.println(res.getContentAsString());
-//        
-//        client.stop();
-//		
-//	}
-//	
-//	
-//	//@Test
-//	void testBlockingServletGet() throws Exception {
-//		
-//		HttpClient client = new HttpClient();
-//        client.start();
-//
-//        ContentResponse res = client.GET("http://localhost:9090/coen6317/BlockingServlet");
-//        
-//        System.out.println(res.getContentAsString());
-//        
-//        client.stop();
-//		
-//	}
-//	
-//	//@Test
-//	void testAsyncServletGet() throws Exception {
-//		
-//		String url = "http://localhost:9090/coen6317/longtask";
-//		HttpClient client = new HttpClient();
-//        client.start();
-//
-//        ContentResponse response = client.GET(url);
-//
-//		assertThat(response.getStatus(), equalTo(200));
-//		
-//		String responseContent = IOUtils.toString(response.getContent());
-//		
-//		 System.out.println(responseContent);
-//		//assertThat(responseContent, equalTo( "This is some heavy resource that will be served in an async way"));
-//		
-//	}
-//
-//	
-//	@Test
-//	void testArtistsGet() throws Exception {
-//		String url = "http://localhost:9090/coen6317/artists";
-//		HttpClient client = new HttpClient();
-//        client.start();
-//
-//        Request request = client.newRequest(url);
-//        request.param("id","id200");
-//        ContentResponse response = request.send();
-//   
-//
-//		assertThat(response.getStatus(), equalTo(200));
-//		
-//		String responseContent = IOUtils.toString(response.getContent());
-//		
-//		 System.out.println(responseContent);
-//		client.stop();
-//		
-//	}
-//	
-//	@SuppressWarnings("deprecation")
-//	@Test
-//	void testArtistsPost() throws Exception {
-//		
-//		String url = "http://localhost:9090/coen6317/artists";
-//		HttpClient client = new HttpClient();
-//        client.start();
-//        
-//        Request request = client.POST(url);
-//        
-//        request.param("id","id200");
-//        request.param("name","artist200");
-//        
-//        ContentResponse response = request.send();
-//		String res = new String(response.getContent());
-//		System.out.println(res);
-//		client.stop();
-//	}
-//	
 	void multipleClientsTest(int noOfClients, int ratioOfTests) throws Exception {
 
-		String url = "http://localhost:9090/library/audio?id=2&key=artistName";
+		String getUrl = "http://localhost:9090/library/audio?id=2&key=artistName";
+
+		Audio audioTest = new Audio("artist_name_test", "track_title_test", "album_title_test", "track_number_test",
+				"year_test", 100, 100);
+
 		ExecutorService executor = Executors.newFixedThreadPool(noOfClients);
 		List<Long> timePeriods = new ArrayList<>();
 		long totalStartTime = System.currentTimeMillis();
@@ -130,43 +32,41 @@ class WebServletTest {
 		client.start();
 
 		for (int i = 0; i < noOfClients; i++) {
-			int clientID = i + 1;
+			int id = i + 1;
 
 			executor.execute(() -> {
-				for (int j = 0; j < ratioOfTests; j++) {
+				for (int j = 0; j < noOfClients - (noOfClients/ratioOfTests); j++) {
+					
+					  try { long startTime = System.currentTimeMillis(); ContentResponse res =
+					  client.GET(getUrl); 
+					  assertEquals(res.getStatus(), 200);
+					  long finishTime = System.currentTimeMillis() - startTime;
+					  timePeriods.add(finishTime);
+					  } catch (InterruptedException | ExecutionException | TimeoutException e) {
+					  System.out.print(e.getMessage()); }
+					 
+				}
+				for (int j = 0; j < noOfClients/ratioOfTests; j++) {
+
 					try {
 						long startTime = System.currentTimeMillis();
-						ContentResponse res = client.GET(url);
-						assertThat(res.getStatus(), equalTo(200));
+						Fields fields = new Fields();
+						fields.add("trackTitle", audioTest.getTrackTitle());
+						fields.add("artistName", audioTest.getArtistName());
+						fields.add("albumTitle", audioTest.getAlbumTitle());
+						fields.add("trackNumber", audioTest.getTrackNumber());
+						fields.add("year", audioTest.getYear());
+						ContentResponse res = client.FORM("http://localhost:9090/library/audio", fields);
 
+						assertEquals(res.getStatus(), 200);
 						long finishTime = System.currentTimeMillis() - startTime;
 						timePeriods.add(finishTime);
 
 					} catch (InterruptedException | ExecutionException | TimeoutException e) {
 						System.out.print(e.getMessage());
 					}
-				}
-				
 
-				/*
-				 * Audio audio = new Audio("artist_name_test", "track_title_test",
-				 * "album_title_test", "track_number_test", "year_test", 100, 100);
-				 * 
-				 * try { String jsonString = mapper.writeValueAsString(audio);
-				 * 
-				 * long startTime = System.currentTimeMillis();
-				 * 
-				 * ContentResponse res = client.POST(uri) .content(new
-				 * StringContentProvider(jsonString), "application/json").send();
-				 * assertThat(res.getStatus(), equalTo(200)); //
-				 * System.out.println(res.getContentAsString());
-				 * 
-				 * long finishTime = System.currentTimeMillis() - startTime;
-				 * timePeriods.add(finishTime);
-				 * 
-				 * } catch (InterruptedException | TimeoutException | ExecutionException |
-				 * JsonProcessingException e) { System.out.print(e.getMessage()); }
-				 */
+				}
 
 			});
 		}
@@ -213,7 +113,7 @@ class WebServletTest {
 	void testAudios10Clients10ratio() throws Exception {
 		multipleClientsTest(10, 10);
 	}
-	
+
 	@Test
 	void testAudios50Clients10ratio() throws Exception {
 		multipleClientsTest(50, 10);
